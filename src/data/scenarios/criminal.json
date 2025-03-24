@@ -1,0 +1,36 @@
+{
+    "id": "criminal-001",
+    "title": "State v. Richardson",
+    "case_type": "criminal defense",
+    "description": "A felony controlled substance possession case with Fourth Amendment search and seizure issues.",
+    "facts": "Defendant James Richardson was pulled over for a broken taillight. During the stop, officers claimed to smell marijuana and conducted a search of the vehicle, finding 28 grams of cocaine in a locked glove compartment. The officers did not have a warrant for the search. The defendant claims the traffic stop was pretextual and the search was conducted without probable cause or consent.",
+    "legal_issues": [
+      "Whether the traffic stop was lawful",
+      "Whether the officers had probable cause to search the vehicle",
+      "Whether the automobile exception to the warrant requirement applies to a locked glove compartment",
+      "Whether evidence should be suppressed under the exclusionary rule"
+    ],
+    "precedents": [
+      {
+        "name": "State v. Winfrey (2019)",
+        "holding": "The odor of marijuana alone may constitute probable cause to search a vehicle in Connecticut, but the search must be reasonably related in scope to the circumstances."
+      },
+      {
+        "name": "State v. Jenkins (2021)",
+        "holding": "A pretextual traffic stop based on an observed traffic violation does not violate the Fourth Amendment even if the officer's primary motivation was to investigate other criminal activity."
+      }
+    ],
+    "statutes": [
+      {
+        "name": "Connecticut General Statutes § 21a-279",
+        "text": "Penalty for illegal possession. Alternative sentences. (a) Any person who possesses or has under such person's control any quantity of any controlled substance, except less than one-half ounce of a cannabis-type substance and except as authorized in this chapter, shall be guilty of a class A misdemeanor."
+      },
+      {
+        "name": "Connecticut General Statutes § 54-33m",
+        "text": "Whenever a police officer makes a lawful arrest for a motor vehicle violation and is not required to take the accused into immediate custody, the officer shall check the record of such person for any outstanding arrest warrants, and if found, may detain such person for a reasonable period of time while a determination is made as to the existence of any such arrest warrant."
+      }
+    ],
+    "judge_personality": "strict",
+    "opposing_counsel_strategy": "by-the-book",
+    "difficulty": "hard"
+  }

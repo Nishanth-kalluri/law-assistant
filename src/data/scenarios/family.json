@@ -1,0 +1,36 @@
+{
+    "id": "family-001",
+    "title": "Harper v. Harper",
+    "case_type": "family law",
+    "description": "A contested divorce case involving complex property division and a disputed prenuptial agreement.",
+    "facts": "After 12 years of marriage, James Harper filed for divorce from Catherine Harper. The couple signed a prenuptial agreement one day before their wedding. Catherine claims she signed under duress and without proper legal counsel. At stake is a family business valued at $3.8 million that James started two years before the marriage but which grew substantially during the marriage with Catherine working as CFO. They also dispute custody of their two children, ages 8 and 10.",
+    "legal_issues": [
+      "Whether the prenuptial agreement is enforceable given the circumstances of signing",
+      "Whether the business appreciation during marriage constitutes marital property",
+      "What custody arrangement serves the best interests of the children",
+      "Whether Catherine's contributions to the business entitle her to a portion of its value"
+    ],
+    "precedents": [
+      {
+        "name": "Bedrick v. Bedrick (2011)",
+        "holding": "Prenuptial agreements in Connecticut may be unenforceable if they are unconscionable at the time of dissolution, not just at the time of execution."
+      },
+      {
+        "name": "Cifaldi v. Cifaldi (2019)",
+        "holding": "Business appreciation during marriage may be considered marital property subject to distribution when the non-owner spouse made substantial contributions to its growth."
+      }
+    ],
+    "statutes": [
+      {
+        "name": "Connecticut General Statutes § 46b-36g",
+        "text": "Enforcement of premarital agreement. (a) A premarital agreement or amendment shall not be enforceable if the party against whom enforcement is sought proves that: (1) Such party did not execute the agreement voluntarily; or (2) The agreement was unconscionable when it was executed or when enforcement is sought; or (3) Before execution of the agreement, such party was not provided a fair and reasonable disclosure of the amount, character and value of property, financial obligations and income of the other party; or (4) Such party was not afforded a reasonable opportunity to consult with independent counsel."
+      },
+      {
+        "name": "Connecticut General Statutes § 46b-56",
+        "text": "Orders re custody, care, education, visitation and support of children. Best interests of the child. Access to records of minor child by noncustodial parent. (a) In any controversy before the Superior Court as to the custody or care of minor children... the court may make or modify any proper order regarding the custody, care, education, visitation and support of the children... According to the best interests of the child."
+      }
+    ],
+    "judge_personality": "child-focused",
+    "opposing_counsel_strategy": "financial-focused",
+    "difficulty": "hard"
+  }

@@ -24,3 +24,6 @@ TOP_P = 0.9
 # Application Settings
 MAX_RESULTS = 5
 MAX_HISTORY = 6  # Maximum number of conversation exchanges to include
+
+DEFAULT_JUDGE_PERSONALITY = "neutral"
+DEFAULT_OPPOSING_COUNSEL_STRATEGY = "standard"

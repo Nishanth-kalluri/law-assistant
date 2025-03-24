@@ -13,7 +13,7 @@ load_dotenv()
 from page_modules.landing import show_landing_page
 from page_modules.legal_assistant import show_legal_assistant
 from page_modules.argument_practice import show_argument_practice
-from page_modules.court_simulator import show_court_simulator
+from page_modules.court_simulator import render_court_simulator  # Changed from show_court_simulator to render_court_simulator
 
 # Import utility functions
 from utils.ui import build_sidebar, apply_custom_css
@@ -58,7 +58,7 @@ def main():
     elif st.session_state.current_page == "argument_practice":
         show_argument_practice()
     elif st.session_state.current_page == "court_simulator":
-        show_court_simulator()
+        render_court_simulator()  # Changed from show_court_simulator() to render_court_simulator()
     else:
         # Default to landing if unknown page
         show_landing_page()

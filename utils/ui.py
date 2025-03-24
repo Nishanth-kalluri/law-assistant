@@ -16,7 +16,21 @@ def build_sidebar():
         # Clean conversation button (only show when in a chat page)
         if st.session_state.current_page != "landing":
             if st.button("🗑️ Clear Conversation", use_container_width=True):
-                st.session_state.conversation_history = []
+                # Clear Legal Assistant conversation history
+                if 'conversation_history' in st.session_state:
+                    st.session_state.conversation_history = []
+                
+                # Clear Court Simulator conversation
+                if st.session_state.current_page == "court_simulator":
+                    if 'messages' in st.session_state:
+                        st.session_state.messages = []
+                    if 'active_simulation' in st.session_state:
+                        st.session_state.active_simulation = False
+                    if 'court_simulator' in st.session_state:
+                        # Reset the simulator - import dynamically to avoid circular imports
+                        from src.court_simulator.engine import CourtSimulator
+                        st.session_state.court_simulator = CourtSimulator()
+                
                 st.rerun()
         
         st.divider()

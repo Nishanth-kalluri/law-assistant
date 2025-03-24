@@ -1,0 +1,32 @@
+{
+    "id": "contract-002",
+    "title": "TechVision LLC v. DataSync Solutions",
+    "case_type": "contract dispute",
+    "description": "A dispute over a software development agreement with claims of feature omission and scope creep.",
+    "facts": "TechVision contracted DataSync to develop a custom inventory management system with specified features by September 1. Upon delivery, TechVision claims several key features were missing or incomplete. DataSync argues TechVision repeatedly requested changes and additions beyond the original scope, causing delays and increased costs. DataSync has filed a counterclaim for $85,000 in unpaid development fees.",
+    "legal_issues": [
+      "Whether DataSync breached the contract by failing to deliver all specified features",
+      "Whether TechVision's requests constituted scope creep justifying timeline extensions",
+      "Whether the change request provisions in the contract were properly followed",
+      "Whether DataSync is entitled to additional payment for work performed"
+    ],
+    "precedents": [
+      {
+        "name": "SoftwareCraft Inc. v. Meridian Hotels (2021)",
+        "holding": "Software developers must adhere to written specifications unless formal change orders are executed per contract terms."
+      },
+      {
+        "name": "Digital Solutions v. Hartford Manufacturing (2019)",
+        "holding": "Clients who accept and use delivered software despite alleged deficiencies may be deemed to have waived certain contractual requirements."
+      }
+    ],
+    "statutes": [
+      {
+        "name": "Connecticut General Statutes § 42a-2-609",
+        "text": "Right to adequate assurance of performance. When reasonable grounds for insecurity arise with respect to the performance of either party the other may in writing demand adequate assurance of due performance and until he receives such assurance may if commercially reasonable suspend any performance for which he has not already received the agreed return."
+      }
+    ],
+    "judge_personality": "pragmatic",
+    "opposing_counsel_strategy": "aggressive",
+    "difficulty": "hard"
+  }
