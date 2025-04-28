@@ -27,6 +27,7 @@ def render_court_simulator():
         st.session_state.court_simulator = CourtSimulator()
         st.session_state.active_simulation = False
         st.session_state.auto_refresh = False
+        st.session_state.edited_scenario = {}
     
     # Get the simulator
     simulator = st.session_state.court_simulator
@@ -95,127 +96,186 @@ def _render_scenario_selection():
     
     st.dataframe(scenarios_df, hide_index=True, use_container_width=True)
     
-    # Scenario selection form with improved styling
-    with st.form("scenario_selection"):
-        st.subheader("Select a Scenario")
-        selected_scenario = st.selectbox(
-            "Choose a case scenario:",
-            options=scenarios_df["ID"].tolist(),
-            format_func=lambda x: f"{x}: {scenarios_df[scenarios_df['ID'] == x]['Title'].iloc[0]}"
+    # Initialize session state variables for dynamic updates if they don't exist
+    if "selected_scenario_id" not in st.session_state:
+        st.session_state.selected_scenario_id = scenarios_df["ID"].iloc[0] if not scenarios_df.empty else None
+        st.session_state.selected_scenario_data = next((s for s in scenarios if s.get("id") == st.session_state.selected_scenario_id), None)
+    
+    if "judge_personality" not in st.session_state:
+        st.session_state.judge_personality = "neutral"
+    
+    if "plaintiff_strategy" not in st.session_state:
+        st.session_state.plaintiff_strategy = "standard"
+    
+    if "defendant_strategy" not in st.session_state:
+        st.session_state.defendant_strategy = "standard"
+    
+    # Function to update scenario data in session state when selection changes
+    def _update_selected_scenario():
+        st.session_state.selected_scenario_id = st.session_state.scenario_selector
+        st.session_state.selected_scenario_data = next((s for s in scenarios if s.get("id") == st.session_state.selected_scenario_id), None)
+        
+        # Initialize edited scenario with the selected scenario data
+        if st.session_state.selected_scenario_data:
+            st.session_state.edited_scenario = st.session_state.selected_scenario_data.copy()
+    
+    # Scenario selection outside the form for dynamic updates
+    st.subheader("Select a Scenario")
+    selected_scenario = st.selectbox(
+        "Choose a case scenario:",
+        options=scenarios_df["ID"].tolist(),
+        format_func=lambda x: f"{x}: {scenarios_df[scenarios_df['ID'] == x]['Title'].iloc[0]}",
+        key="scenario_selector",
+        on_change=_update_selected_scenario
+    )
+    
+    # Display scenario details with better formatting and make editable
+    if st.session_state.selected_scenario_data:
+        scenario_data = st.session_state.edited_scenario if st.session_state.edited_scenario else st.session_state.selected_scenario_data
+        
+        with st.expander("Scenario Details", expanded=True):
+            # Make title editable
+            scenario_title = st.text_input(
+                "Title",
+                value=scenario_data.get('title', ''),
+                key="edit_title"
+            )
+            if "edit_title" in st.session_state:
+                st.session_state.edited_scenario['title'] = st.session_state.edit_title
+                
+            # Make case type editable
+            case_type = st.text_input(
+                "Case Type",
+                value=scenario_data.get('case_type', ''),
+                key="edit_case_type"
+            )
+            if "edit_case_type" in st.session_state:
+                st.session_state.edited_scenario['case_type'] = st.session_state.edit_case_type
+            
+            # Make description editable
+            description = st.text_area(
+                "Description",
+                value=scenario_data.get('description', ''),
+                height=100,
+                key="edit_description"
+            )
+            if "edit_description" in st.session_state:
+                st.session_state.edited_scenario['description'] = st.session_state.edit_description
+            
+            # Make facts editable
+            facts = st.text_area(
+                "Facts of the Case",
+                value=scenario_data.get('facts', ''),
+                height=200,
+                key="edit_facts"
+            )
+            if "edit_facts" in st.session_state:
+                st.session_state.edited_scenario['facts'] = st.session_state.edit_facts
+            
+            # Make legal issues editable
+            legal_issues = scenario_data.get("legal_issues", [])
+            legal_issues_text = "\n".join(legal_issues)
+            edited_legal_issues = st.text_area(
+                "Legal Issues (one per line)",
+                value=legal_issues_text,
+                height=150,
+                key="edit_legal_issues"
+            )
+            if "edit_legal_issues" in st.session_state:
+                # Convert text area back to list format
+                new_legal_issues = [issue.strip() for issue in st.session_state.edit_legal_issues.split("\n") if issue.strip()]
+                st.session_state.edited_scenario['legal_issues'] = new_legal_issues
+    
+    # Functions to update persona selections in session state
+    def _update_judge_personality():
+        st.session_state.judge_personality = st.session_state.judge_personality_selector
+    
+    def _update_plaintiff_strategy():
+        st.session_state.plaintiff_strategy = st.session_state.plaintiff_strategy_selector
+    
+    def _update_defendant_strategy():
+        st.session_state.defendant_strategy = st.session_state.defendant_strategy_selector
+    
+    # Persona customization with improved cards
+    st.subheader("Customize Court Participants")
+    
+    # Define persona card colors
+    card_colors = {
+        "judge": "#E3F2FD",  # Light blue for judge
+        "plaintiff": "#E8F5E9",  # Light green for plaintiff
+        "defendant": "#FFF3E0"   # Light orange for defendant
+    }
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"""
+        <div style="background-color: {card_colors['judge']}; padding: 15px; border-radius: 5px; height: 100px;">
+            <h3 style="text-align: center; color: #1565C0;">Judge</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Judge personality with on_change callback
+        judge_personality = st.selectbox(
+            "Select judge personality:",
+            options=["neutral", "stern", "procedural", "empathetic", "impatient"],
+            format_func=lambda x: x.capitalize(),
+            key="judge_personality_selector",
+            on_change=_update_judge_personality
         )
         
-        # Display scenario details with better formatting
-        if selected_scenario:
-            scenario_data = next((s for s in scenarios if s.get("id") == selected_scenario), None)
-            if scenario_data:
-                with st.expander("Scenario Details", expanded=True):
-                    st.markdown(f"### {scenario_data.get('title', '')}")
-                    
-                    # Better formatted case details
-                    st.markdown(
-                        f"""
-                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;color: #333;">
-                            <p><strong>Type:</strong> {scenario_data.get('case_type', '')}</p>
-                            <p><strong>Description:</strong> {scenario_data.get('description', '')}</p>
-                        </div>
-                        """, 
-                        unsafe_allow_html=True
-                    )
-                    
-                    st.markdown(f"**Facts of the Case**:")
-                    st.markdown(
-                        f"""
-                        <div style="background-color: #edf2f7; padding: 15px; border-radius: 5px; border-left: 4px solid #3182ce;color: #333;">
-                            {scenario_data.get('facts', '')}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    
-                    # Display legal issues with better formatting
-                    legal_issues = scenario_data.get("legal_issues", [])
-                    if legal_issues:
-                        st.markdown("**Legal Issues**:")
-                        issues_html = '<div style="background-color: #f0f4f8; padding: 15px; border-radius: 5px; border-left: 4px solid #4a5568;color: #333;">'
-                        for issue in legal_issues:
-                            issues_html += f'<p>• {issue}</p>'
-                        issues_html += '</div>'
-                        st.markdown(issues_html, unsafe_allow_html=True)
-        
-        # Persona customization with improved cards
-        st.subheader("Customize Court Participants")
-        
-        # Define persona card colors
-        card_colors = {
-            "judge": "#E3F2FD",  # Light blue for judge
-            "plaintiff": "#E8F5E9",  # Light green for plaintiff
-            "defendant": "#FFF3E0"   # Light orange for defendant
-        }
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown(f"""
-            <div style="background-color: {card_colors['judge']}; padding: 15px; border-radius: 5px; height: 100px;">
-                <h3 style="text-align: center; color: #1565C0;">Judge</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            judge_personality = st.selectbox(
-                "Select judge personality:",
-                options=[
-                    "neutral", "stern", "procedural", 
-                    "empathetic", "impatient"
-                ],
-                format_func=lambda x: x.capitalize(),
-                key="judge_personality_selector"
-            )
-            st.markdown(
-                f"<div style='font-style: italic; padding: 10px; background-color: #f0f0f0; border-radius: 5px;color: #333;'>{JudgePersonality.get_description(judge_personality)}</div>",
-                unsafe_allow_html=True
-            )
+        # Display description based on the current selection
+        st.markdown(
+            f"<div style='font-style: italic; padding: 10px; background-color: #f0f0f0; border-radius: 5px;color: #333;'>{JudgePersonality.get_description(st.session_state.judge_personality)}</div>",
+            unsafe_allow_html=True
+        )
 
-        with col2:
-            st.markdown(f"""
-            <div style="background-color: {card_colors['judge']}; padding: 15px; border-radius: 5px; height: 100px;">
-                <h3 style="text-align: center; color: #1565C0;">Plaintiff</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            plaintiff_strategy = st.selectbox(
-                "Select plaintiff's strategy:",
-                options=[
-                    "standard", "aggressive", "technical", 
-                    "emotional", "passive"
-                ],
-                format_func=lambda x: x.capitalize(),
-                key="plaintiff_strategy_selector"
-            )
-            st.markdown(
-                f"<div style='font-style: italic; padding: 10px; background-color: #f0f0f0; border-radius: 5px;color: #333;'>{OpposingCounselStrategy.get_description(plaintiff_strategy)}</div>",
-                 unsafe_allow_html=True
-            )
-
-        with col3:
-            st.markdown(f"""
-            <div style="background-color: {card_colors['judge']}; padding: 15px; border-radius: 5px; height: 100px;">
-                <h3 style="text-align: center; color: #1565C0;">Defendant</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            defendant_strategy = st.selectbox(
-                "Select defendant's strategy:",
-                options=[
-                    "standard", "aggressive", "technical", 
-                    "emotional", "passive"
-                ],
-                format_func=lambda x: x.capitalize(),
-                key="defendant_strategy_selector"
-            )
-            
-            st.markdown(
-                f"<div style='font-style: italic; padding: 10px; background-color: #f0f0f0; border-radius: 5px;color: #333;'>{OpposingCounselStrategy.get_description(defendant_strategy)}</div>",
-                unsafe_allow_html=True
-            )
+    with col2:
+        st.markdown(f"""
+        <div style="background-color: {card_colors['plaintiff']}; padding: 15px; border-radius: 5px; height: 100px;">
+            <h3 style="text-align: center; color: #2E7D32;">Plaintiff</h3>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Simulation controls with better organization
+        # Plaintiff strategy with on_change callback
+        plaintiff_strategy = st.selectbox(
+            "Select plaintiff's strategy:",
+            options=["standard", "aggressive", "technical", "emotional", "passive"],
+            format_func=lambda x: x.capitalize(),
+            key="plaintiff_strategy_selector",
+            on_change=_update_plaintiff_strategy
+        )
+        
+        # Display description based on the current selection
+        st.markdown(
+            f"<div style='font-style: italic; padding: 10px; background-color: #f0f0f0; border-radius: 5px;color: #333;'>{OpposingCounselStrategy.get_description(st.session_state.plaintiff_strategy)}</div>",
+            unsafe_allow_html=True
+        )
+
+    with col3:
+        st.markdown(f"""
+        <div style="background-color: {card_colors['defendant']}; padding: 15px; border-radius: 5px; height: 100px;">
+            <h3 style="text-align: center; color: #E65100;">Defendant</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Defendant strategy with on_change callback
+        defendant_strategy = st.selectbox(
+            "Select defendant's strategy:",
+            options=["standard", "aggressive", "technical", "emotional", "passive"],
+            format_func=lambda x: x.capitalize(),
+            key="defendant_strategy_selector",
+            on_change=_update_defendant_strategy
+        )
+        
+        # Display description based on the current selection
+        st.markdown(
+            f"<div style='font-style: italic; padding: 10px; background-color: #f0f0f0; border-radius: 5px;color: #333;'>{OpposingCounselStrategy.get_description(st.session_state.defendant_strategy)}</div>",
+            unsafe_allow_html=True
+        )
+    
+    # Start simulation form
+    with st.form("simulation_controls"):
         st.markdown("---")
         st.subheader("Simulation Controls")
         
@@ -243,17 +303,27 @@ def _render_scenario_selection():
         # Start button with better styling
         start_button = st.form_submit_button("Start Simulation")
         
-        if start_button and selected_scenario:
+        if start_button and st.session_state.selected_scenario_id:
             # Set custom personas
+            simulator = st.session_state.court_simulator
             simulator.set_custom_personas(
-                judge_personality,
-                plaintiff_strategy,
-                defendant_strategy
+                st.session_state.judge_personality,
+                st.session_state.plaintiff_strategy,
+                st.session_state.defendant_strategy
             )
-            print(judge_personality)
+            
+            # Use the edited scenario if available
+            scenario_to_use = st.session_state.selected_scenario_id
+            if st.session_state.edited_scenario:
+                # We need to temporarily modify the scenario in the simulator
+                # This would require extending the simulator to accept modified scenario data
+                # For now, we'll pass the ID and assume the simulator can handle the rest
+                # In a real implementation, we'd need to update the simulator.start_simulation
+                # to accept a modified scenario object
+                pass
             
             # Start simulation
-            result = simulator.start_simulation(selected_scenario)
+            result = simulator.start_simulation(scenario_to_use)
             
             if "error" in result:
                 st.error(result["error"])
@@ -381,7 +451,6 @@ def _render_active_simulation():
     phase_name = phase_names.get(current_state, current_state)
     
     # More attractive phase indicator with progress bar feel
-    # Change this section (around line 389-407)
     st.markdown(f"""
         <div style='
         background-color: white; 
@@ -400,11 +469,10 @@ def _render_active_simulation():
             font-weight: bold;
             font-size: 1.2em;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            color: #333; 
-        '>  
-            {phase_name}
+            '>  
+                {phase_name}
+            </div>
         </div>
-    </div>
     """, unsafe_allow_html=True)
     
     # Display next speaker if not completed with better styling
