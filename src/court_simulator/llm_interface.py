@@ -2,6 +2,7 @@
 LLM interface for court simulator participants.
 """
 import re
+import time
 from groq import Groq
 from src.config import (
     GROQ_API_KEY, 
@@ -86,6 +87,57 @@ Current Simulation State: {simulation_state.value}
     return context
 
 
+def call_llm_with_retry(messages, temperature=TEMPERATURE, max_tokens=MAX_TOKENS):
+    """Call the LLM API with a retry mechanism.
+    
+    Args:
+        messages: List of message objects for the LLM
+        temperature: Temperature parameter for the LLM
+        max_tokens: Max tokens parameter for the LLM
+        
+    Returns:
+        Cleaned LLM response
+    """
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        chat_completion = client.chat.completions.create(
+            messages=messages,
+            model=GROQ_MODEL,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=TOP_P,
+        )
+        
+        # Get and clean response
+        raw_response = chat_completion.choices[0].message.content
+        cleaned_response = clean_response(raw_response)
+        
+        return cleaned_response
+    
+    except Exception as e:
+        # Wait 10 seconds and retry once
+        time.sleep(10)
+        try:
+            client = Groq(api_key=GROQ_API_KEY)
+            chat_completion = client.chat.completions.create(
+                messages=messages,
+                model=GROQ_MODEL,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=TOP_P,
+            )
+            
+            # Get and clean response
+            raw_response = chat_completion.choices[0].message.content
+            cleaned_response = clean_response(raw_response)
+            
+            return cleaned_response
+        
+        except Exception as e:
+            # Return None if both attempts fail
+            return None
+
+
 def generate_judge_response(scenario, simulation_state, conversation_history):
     """Generate a judge response using the LLM.
     
@@ -125,25 +177,17 @@ How would you respond as the judge at this point in the proceedings?
     # Add the current query
     messages.append({"role": "user", "content": user_prompt})
     
-    # Call Groq API
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(
-            messages=messages,
-            model=GROQ_MODEL,
-            temperature=0.7,  # Slightly higher temperature for more judicial variety
-            max_tokens=MAX_TOKENS,
-            top_p=TOP_P,
-        )
-        
-        # Get and clean response
-        raw_response = chat_completion.choices[0].message.content
-        cleaned_response = clean_response(raw_response)
-        
-        return cleaned_response
+    # Call LLM with retry
+    response = call_llm_with_retry(
+        messages=messages,
+        temperature=0.7,  # Slightly higher temperature for more judicial variety
+        max_tokens=MAX_TOKENS
+    )
     
-    except Exception as e:
-        error_message = f"Error generating judge response: {str(e)}"
+    # Return response or fallback message
+    if response:
+        return response
+    else:
         return "The court is experiencing technical difficulties. We'll resume shortly."
 
 
@@ -186,25 +230,17 @@ How would you respond as plaintiff's counsel at this point in the proceedings?
     # Add the current query
     messages.append({"role": "user", "content": user_prompt})
     
-    # Call Groq API
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(
-            messages=messages,
-            model=GROQ_MODEL,
-            temperature=0.7,  # Slightly higher for variety
-            max_tokens=MAX_TOKENS,
-            top_p=TOP_P,
-        )
-        
-        # Get and clean response
-        raw_response = chat_completion.choices[0].message.content
-        cleaned_response = clean_response(raw_response)
-        
-        return cleaned_response
+    # Call LLM with retry
+    response = call_llm_with_retry(
+        messages=messages,
+        temperature=0.7,  # Slightly higher for variety
+        max_tokens=MAX_TOKENS
+    )
     
-    except Exception as e:
-        error_message = f"Error generating plaintiff counsel response: {str(e)}"
+    # Return response or fallback message
+    if response:
+        return response
+    else:
         return "Plaintiff's counsel is preparing their response."
 
 
@@ -247,25 +283,17 @@ How would you respond as defendant's counsel at this point in the proceedings?
     # Add the current query
     messages.append({"role": "user", "content": user_prompt})
     
-    # Call Groq API
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(
-            messages=messages,
-            model=GROQ_MODEL,
-            temperature=0.7,  # Slightly higher for variety
-            max_tokens=MAX_TOKENS,
-            top_p=TOP_P,
-        )
-        
-        # Get and clean response
-        raw_response = chat_completion.choices[0].message.content
-        cleaned_response = clean_response(raw_response)
-        
-        return cleaned_response
+    # Call LLM with retry
+    response = call_llm_with_retry(
+        messages=messages,
+        temperature=0.7,  # Slightly higher for variety
+        max_tokens=MAX_TOKENS
+    )
     
-    except Exception as e:
-        error_message = f"Error generating opposing counsel response: {str(e)}"
+    # Return response or fallback message
+    if response:
+        return response
+    else:
         return "Defendant's counsel is preparing their response."
 
 
@@ -326,62 +354,15 @@ Provide specific suggestions for improvement.
     # Add the current query
     messages.append({"role": "user", "content": user_prompt})
     
-    # Call Groq API
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(
-            messages=messages,
-            model=GROQ_MODEL,
-            temperature=0.4,  # Lower for more consistent evaluation
-            max_tokens=1500,  # Larger for detailed feedback
-            top_p=TOP_P,
-        )
-        
-        # Get response
-        response = chat_completion.choices[0].message.content
-        
-        # Extract scores (simple regex extraction)
-        scores = {
-            "legal_reasoning": 0,
-            "presentation": 0,
-            "responsiveness": 0,
-            "procedural_knowledge": 0,
-            "overall": 0
-        }
-        
-        # Simple pattern matching to extract scores
-        if "Legal Reasoning: " in response or "Legal Reasoning:" in response:
-            match = re.search(r"Legal Reasoning:?\s*(\d+(?:\.\d+)?)", response)
-            if match:
-                scores["legal_reasoning"] = float(match.group(1))
-        
-        if "Presentation" in response:
-            match = re.search(r"Presentation.*?:?\s*(\d+(?:\.\d+)?)", response)
-            if match:
-                scores["presentation"] = float(match.group(1))
-                
-        if "Responsiveness" in response:
-            match = re.search(r"Responsiveness.*?:?\s*(\d+(?:\.\d+)?)", response)
-            if match:
-                scores["responsiveness"] = float(match.group(1))
-                
-        if "Procedural Knowledge" in response or "Procedural:" in response:
-            match = re.search(r"Procedural.*?:?\s*(\d+(?:\.\d+)?)", response)
-            if match:
-                scores["procedural_knowledge"] = float(match.group(1))
-                
-        if "Overall" in response or "Overall:" in response:
-            match = re.search(r"Overall.*?:?\s*(\d+(?:\.\d+)?)", response)
-            if match:
-                scores["overall"] = float(match.group(1))
-        
-        return {
-            "feedback_text": response,
-            "scores": scores
-        }
+    # Call LLM with retry and larger max_tokens for feedback
+    response = call_llm_with_retry(
+        messages=messages,
+        temperature=0.4,  # Lower for more consistent evaluation
+        max_tokens=1500  # Larger for detailed feedback
+    )
     
-    except Exception as e:
-        error_message = f"Error generating feedback: {str(e)}"
+    # Return response or fallback with default scores
+    if not response:
         return {
             "feedback_text": "Unable to generate detailed feedback at this time.",
             "scores": {
@@ -392,3 +373,43 @@ Provide specific suggestions for improvement.
                 "overall": 3
             }
         }
+    
+    # Extract scores (simple regex extraction)
+    scores = {
+        "legal_reasoning": 0,
+        "presentation": 0,
+        "responsiveness": 0,
+        "procedural_knowledge": 0,
+        "overall": 0
+    }
+    
+    # Simple pattern matching to extract scores
+    if "Legal Reasoning: " in response or "Legal Reasoning:" in response:
+        match = re.search(r"Legal Reasoning:?\s*(\d+(?:\.\d+)?)", response)
+        if match:
+            scores["legal_reasoning"] = float(match.group(1))
+    
+    if "Presentation" in response:
+        match = re.search(r"Presentation.*?:?\s*(\d+(?:\.\d+)?)", response)
+        if match:
+            scores["presentation"] = float(match.group(1))
+            
+    if "Responsiveness" in response:
+        match = re.search(r"Responsiveness.*?:?\s*(\d+(?:\.\d+)?)", response)
+        if match:
+            scores["responsiveness"] = float(match.group(1))
+            
+    if "Procedural Knowledge" in response or "Procedural:" in response:
+        match = re.search(r"Procedural.*?:?\s*(\d+(?:\.\d+)?)", response)
+        if match:
+            scores["procedural_knowledge"] = float(match.group(1))
+            
+    if "Overall" in response or "Overall:" in response:
+        match = re.search(r"Overall.*?:?\s*(\d+(?:\.\d+)?)", response)
+        if match:
+            scores["overall"] = float(match.group(1))
+    
+    return {
+        "feedback_text": response,
+        "scores": scores
+    }

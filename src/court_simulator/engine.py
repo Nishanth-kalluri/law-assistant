@@ -229,158 +229,258 @@ class CourtSimulator:
         # Determine next action based on current state and speaker
         if self.state == SimulationState.INTRODUCTION:
             # After judge introduction, plaintiff counsel gives opening
-            response = generate_plaintiff_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.PLAINTIFF_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.PLAINTIFF_OPENING
-            self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            try:
+                response = generate_plaintiff_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.PLAINTIFF_OPENING
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            except Exception as e:
+                print(f"Error generating plaintiff opening: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": "Plaintiff's counsel is preparing their opening statement."
+                })
+                self.state = SimulationState.PLAINTIFF_OPENING
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
             
         elif self.state == SimulationState.PLAINTIFF_OPENING:
             # Defendant counsel gives opening
-            response = generate_opposing_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.DEFENDANT_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.DEFENDANT_OPENING
-            self.active_speaker = SimulationRole.JUDGE
+            try:
+                response = generate_opposing_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.DEFENDANT_OPENING
+                self.active_speaker = SimulationRole.JUDGE
+            except Exception as e:
+                print(f"Error generating defendant opening: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": "Defendant's counsel is preparing their opening statement."
+                })
+                self.state = SimulationState.DEFENDANT_OPENING
+                self.active_speaker = SimulationRole.JUDGE
             
         elif self.state == SimulationState.DEFENDANT_OPENING:
             # Judge transitions to evidence phase
-            response = generate_judge_response(
-                self.scenario,
-                SimulationState.PLAINTIFF_EVIDENCE,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.JUDGE.value,
-                "content": response
-            })
-            self.state = SimulationState.PLAINTIFF_EVIDENCE
-            self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
+            try:
+                response = generate_judge_response(
+                    self.scenario,
+                    SimulationState.PLAINTIFF_EVIDENCE,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.JUDGE.value,
+                    "content": response
+                })
+                self.state = SimulationState.PLAINTIFF_EVIDENCE
+                self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
+            except Exception as e:
+                print(f"Error generating judge response: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.JUDGE.value,
+                    "content": "Thank you for your opening statements. We will now proceed to the evidence phase. Plaintiff's counsel, please present your evidence."
+                })
+                self.state = SimulationState.PLAINTIFF_EVIDENCE
+                self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
             
         elif self.state == SimulationState.PLAINTIFF_EVIDENCE:
             # Plaintiff presents evidence
-            response = generate_plaintiff_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.PLAINTIFF_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.DEFENDANT_EVIDENCE
-            self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            try:
+                response = generate_plaintiff_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.DEFENDANT_EVIDENCE
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            except Exception as e:
+                print(f"Error generating plaintiff evidence: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": "Your Honor, the plaintiff would like to present the following evidence..."
+                })
+                self.state = SimulationState.DEFENDANT_EVIDENCE
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
             
         elif self.state == SimulationState.DEFENDANT_EVIDENCE:
             # Defendant presents evidence
-            response = generate_opposing_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.DEFENDANT_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.JUDGE_QUESTIONING
-            self.active_speaker = SimulationRole.JUDGE
+            try:
+                response = generate_opposing_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.JUDGE_QUESTIONING
+                self.active_speaker = SimulationRole.JUDGE
+            except Exception as e:
+                print(f"Error generating defendant evidence: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": "Your Honor, the defendant would like to present the following evidence..."
+                })
+                self.state = SimulationState.JUDGE_QUESTIONING
+                self.active_speaker = SimulationRole.JUDGE
             
         elif self.state == SimulationState.JUDGE_QUESTIONING:
             # Judge asks questions
-            response = generate_judge_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.JUDGE.value,
-                "content": response
-            })
-            self.state = SimulationState.PLAINTIFF_REBUTTAL
-            self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
+            try:
+                response = generate_judge_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.JUDGE.value,
+                    "content": response
+                })
+                self.state = SimulationState.PLAINTIFF_REBUTTAL
+                self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
+            except Exception as e:
+                print(f"Error generating judge questioning: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.JUDGE.value,
+                    "content": "I have some questions for both counsels based on the evidence presented..."
+                })
+                self.state = SimulationState.PLAINTIFF_REBUTTAL
+                self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
             
         elif self.state == SimulationState.PLAINTIFF_REBUTTAL:
             # Plaintiff rebuttal
-            response = generate_plaintiff_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.PLAINTIFF_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.DEFENDANT_REBUTTAL
-            self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            try:
+                response = generate_plaintiff_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.DEFENDANT_REBUTTAL
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            except Exception as e:
+                print(f"Error generating plaintiff rebuttal: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": "Your Honor, in response to the defendant's arguments..."
+                })
+                self.state = SimulationState.DEFENDANT_REBUTTAL
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
             
         elif self.state == SimulationState.DEFENDANT_REBUTTAL:
             # Defendant rebuttal
-            response = generate_opposing_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.DEFENDANT_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.PLAINTIFF_CLOSING
-            self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
+            try:
+                response = generate_opposing_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.PLAINTIFF_CLOSING
+                self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
+            except Exception as e:
+                print(f"Error generating defendant rebuttal: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": "Your Honor, in response to the plaintiff's arguments..."
+                })
+                self.state = SimulationState.PLAINTIFF_CLOSING
+                self.active_speaker = SimulationRole.PLAINTIFF_COUNSEL
             
         elif self.state == SimulationState.PLAINTIFF_CLOSING:
             # Plaintiff closing argument
-            response = generate_plaintiff_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.PLAINTIFF_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.DEFENDANT_CLOSING
-            self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            try:
+                response = generate_plaintiff_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.DEFENDANT_CLOSING
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
+            except Exception as e:
+                print(f"Error generating plaintiff closing: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.PLAINTIFF_COUNSEL.value,
+                    "content": "Your Honor, in conclusion, I would like to emphasize..."
+                })
+                self.state = SimulationState.DEFENDANT_CLOSING
+                self.active_speaker = SimulationRole.DEFENDANT_COUNSEL
             
         elif self.state == SimulationState.DEFENDANT_CLOSING:
             # Defendant closing argument
-            response = generate_opposing_counsel_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.DEFENDANT_COUNSEL.value,
-                "content": response
-            })
-            self.state = SimulationState.RULING
-            self.active_speaker = SimulationRole.JUDGE
+            try:
+                response = generate_opposing_counsel_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": response
+                })
+                self.state = SimulationState.RULING
+                self.active_speaker = SimulationRole.JUDGE
+            except Exception as e:
+                print(f"Error generating defendant closing: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.DEFENDANT_COUNSEL.value,
+                    "content": "Your Honor, in conclusion, I would like to emphasize..."
+                })
+                self.state = SimulationState.RULING
+                self.active_speaker = SimulationRole.JUDGE
             
         elif self.state == SimulationState.RULING:
             # Judge gives ruling
-            response = generate_judge_response(
-                self.scenario,
-                self.state,
-                self.conversation_history
-            )
-            self.conversation_history.append({
-                "role": SimulationRole.JUDGE.value,
-                "content": response
-            })
-            self.state = SimulationState.COMPLETED
-            self.active_speaker = None
-            self.is_paused = True
+            try:
+                response = generate_judge_response(
+                    self.scenario,
+                    self.state,
+                    self.conversation_history
+                )
+                self.conversation_history.append({
+                    "role": SimulationRole.JUDGE.value,
+                    "content": response
+                })
+                self.state = SimulationState.COMPLETED
+                self.active_speaker = None
+                self.is_paused = True
+            except Exception as e:
+                print(f"Error generating judge ruling: {e}")
+                self.conversation_history.append({
+                    "role": SimulationRole.JUDGE.value,
+                    "content": "Having considered all evidence and arguments presented, the court rules as follows..."
+                })
+                self.state = SimulationState.COMPLETED
+                self.active_speaker = None
+                self.is_paused = True
             
         # Reset timer for auto-advance
         self.last_advance_time = time.time()
